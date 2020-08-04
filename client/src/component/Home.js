@@ -16,6 +16,7 @@ function Home(props) {
   const ENDPOINT = "http://127.0.0.1:3001"
   socket = socketClient(ENDPOINT);
   const room = props.location.state.roomName;
+  const username = props.location.state.username;
   const [successConnect, setConnect] = useState("");
   const [disconnect, setDisconnect] = useState("");
   const [chat, setChat] = useState("");
@@ -27,8 +28,10 @@ function Home(props) {
    socket.on('connect', ()=>{
      console.log("connecterd")
    })
-   socket.emit('joinRoom', room);
-
+   socket.emit('joinRoom', {room, username});
+   socket.on('user joined', data=>{
+     console.log(data);
+   })
    socket.on('receiveMessage', data =>{
      console.log(data);
      setPool(state =>[...state,data]);
@@ -47,7 +50,7 @@ function Home(props) {
 
   const sendMessage = () =>{
    if(socket && room){
-     socket.emit("send", {room, message});
+     socket.emit("send", {room, message, username});
    }
     setMessage("");
   }
@@ -56,13 +59,13 @@ function Home(props) {
     <div className="App" style={{display:'flex', flexDirection:"column", alignItems:'center'}}>
         <Paper elevation={8} style={{height:600, width:1000, marginTop:50, display:'flex', flexDirection:'column', alignItems:'center', backgroundColor:'#f5fafc'}}>
            
-            <Paper evelation={15} style={{height:400, width:800, marginTop:50, marginBottom:20,}}>
+            <Paper evelation={15} style={{height:400, width:800, marginTop:50, marginBottom:20, display:'flex', flexDirection:'column'}}>
                 <Scrollbars autoHide
-         style={{overflowX:'hidden'}}
+         style={{overflowX:'hidden', display:'flex', flexDirection:'row'}}
          autoHideTimeout={1000}
          autoHideDuration={200}>
            <GreetingBubble/>
-                  {messagePool!== null && messagePool.map((el,i) => <ChatBubble chat={el}/>)}
+                  {messagePool!== null && messagePool.map((el,i) => <ChatBubble chat={el} username={username}/>)}
                 </Scrollbars>
             </Paper>
            <div style={{width:'100%', display:'flex', flexDirection:'row', justifyContent:'flex-start'}}>
